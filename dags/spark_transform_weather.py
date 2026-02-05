@@ -24,7 +24,7 @@ dag = DAG(
     'spark_transform_weather',
     default_args=default_args,
     description='Transform MongoDB weather data to PostgreSQL using Spark',
-    schedule_interval=timedelta(minutes=5),
+    schedule_interval=timedelta(seconds=20),
     catchup=False,
     tags=['spark', 'weather', 'transform', 'etl'],
 )
