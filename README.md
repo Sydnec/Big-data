@@ -5,9 +5,13 @@ Projet ETL de données météo TP Big Data.
 ## Architecture
 
 ```
-Open Meteo API -> MongoDB -> Spark -> PostgreSQL -> Grafana
-                     |                     |
-                  Airflow             Prometheus
+   Open Meteo API
+         |
+      Airflow
+      |     \
+   MongoDB -> Spark -> PostgreSQL
+                           |
+                        Prometheus -> Grafana
 ```
 
 ## Stack technique
@@ -15,33 +19,33 @@ Open Meteo API -> MongoDB -> Spark -> PostgreSQL -> Grafana
 | Composant   | Role                              |
 |-------------|-----------------------------------|
 | Airflow     | Orchestration des pipelines       |
-| MongoDB     | Data lake (donnees brutes)        |
-| Spark       | Transformation des donnees        |
-| PostgreSQL  | Data warehouse (donnees traitees) |
-| Prometheus  | Collecte des metriques            |
+| MongoDB     | Data lake (données brutes)        |
+| Spark       | Transformation des données        |
+| PostgreSQL  | Data warehouse (données traitées) |
+| Prometheus  | Collecte des métriques            |
 | Grafana     | Visualisation et monitoring       |
 
-## Donnees collectees
+## Données collectées
 
-Donnees meteo horaires pour les villes d'Occitanie via Open Meteo API :
+Les données colléctées pour les villes d'Occitanie sont les suivantes :
 
-- Temperature (2m)
-- Precipitations
+- Température (2m)
+- Précipitations
 - Vitesse et direction du vent (10m)
-- Humidite relative (2m)
-- Pression atmospherique
-- Temperature et humidite du sol
+- Humidité relative (2m)
+- Pression atmosphérique
+- Température et humidité du sol
 - Couverture nuageuse
 
-## Metriques Grafana
+## Métriques Grafana
 
-Dashboard de monitoring du pipeline :
+Dashboard de monitoring :
 
 - Nombre de documents bruts (MongoDB)
-- Nombre de lignes traitees (PostgreSQL)
+- Nombre de lignes traitées (PostgreSQL)
 - Ratio de traitement
-- Volume de donnees par ville
-- Evolution du volume dans le temps
+- Volume de données par ville
+- Évolution du volume dans le temps
 - Erreurs de collecte
 
 ## Lancement
