@@ -1,5 +1,8 @@
 # Big Data Weather ETL
 
+TERRACCIANO Anthony  
+BOURLIER Simon
+
 Projet ETL de données météo TP Big Data.
 
 ## Architecture
@@ -56,13 +59,13 @@ docker compose up -d
 
 ## URLs des services
 
-| Service       | URL                       |
-|---------------|---------------------------|
-| Airflow       | http://localhost:8080     |
-| Mongo Express | http://localhost:8081     |
-| Spark Master  | http://localhost:8082     |
-| Prometheus    | http://localhost:9090     |
-| Grafana       | http://localhost:3000     |
+| Service       | URL                       | Login   | Mot de passe |
+|---------------|---------------------------|---------|--------------|
+| Airflow       | http://localhost:8080     | admin   | admin        |
+| Mongo Express | http://localhost:8081     | admin   | admin        |
+| Spark Master  | http://localhost:8082     | -       | -            |
+| Prometheus    | http://localhost:9090     | -       | -            |
+| Grafana       | http://localhost:3000     | admin   | admin123     |
 
 ## Structure du projet
 
