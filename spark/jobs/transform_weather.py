@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     IntegerType, TimestampType
 )
 import sys
+import os
 
 def create_spark_session():
     return SparkSession.builder \
@@ -101,11 +102,19 @@ def process_staging_to_fact(jdbc_url, jdbc_props):
     return rows_processed
 
 def main():
-    mongo_uri = "mongodb://admin:admin@mongodb:27017/?authSource=admin"
-    jdbc_url = "jdbc:postgresql://postgres-weather:5432/weather_db"
+    mongo_user = os.environ.get('MONGO_INITDB_ROOT_USERNAME')
+    mongo_pass = os.environ.get('MONGO_INITDB_ROOT_PASSWORD')
+    mongo_host = os.environ.get('MONGO_HOST', 'mongodb')
+    mongo_port = os.environ.get('MONGO_PORT', '27017')
+    mongo_uri = f"mongodb://{mongo_user}:{mongo_pass}@{mongo_host}:{mongo_port}/?authSource=admin"
+
+    pg_user = os.environ.get('PG_WEATHER_USER')
+    pg_password = os.environ.get('PG_WEATHER_PASSWORD')
+    pg_db = os.environ.get('PG_WEATHER_DB')
+    jdbc_url = f"jdbc:postgresql://postgres-weather:5432/{pg_db}"
     jdbc_props = {
-        "user": "weather",
-        "password": "weather123",
+        "user": pg_user,
+        "password": pg_password,
         "driver": "org.postgresql.Driver"
     }
     staging_table = "fact_weather_hourly_staging"

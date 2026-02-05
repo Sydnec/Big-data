@@ -13,15 +13,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://admin:admin@mongodb:27017/')
+MONGO_USER = os.getenv('MONGO_INITDB_ROOT_USERNAME')
+MONGO_PASS = os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+MONGO_HOST = os.getenv('MONGO_HOST', 'mongodb')
+MONGO_PORT = os.getenv('MONGO_PORT', '27017')
+MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}/"
 MONGO_DB = os.getenv('MONGO_DB', 'weather')
 MONGO_COLLECTION = os.getenv('MONGO_COLLECTION', 'raw_weather')
 
 PG_HOST = os.getenv('PG_HOST', 'postgres-weather')
 PG_PORT = int(os.getenv('PG_PORT', '5432'))
-PG_USER = os.getenv('PG_USER', 'weather')
-PG_PASSWORD = os.getenv('PG_PASSWORD', 'weather123')
-PG_DATABASE = os.getenv('PG_DATABASE', 'weather_db')
+PG_USER = os.getenv('PG_WEATHER_USER')
+PG_PASSWORD = os.getenv('PG_WEATHER_PASSWORD')
+PG_DATABASE = os.getenv('PG_WEATHER_DB')
 
 METRICS_PORT = int(os.getenv('METRICS_PORT', '9101'))
 SCRAPE_INTERVAL = int(os.getenv('SCRAPE_INTERVAL', '15'))

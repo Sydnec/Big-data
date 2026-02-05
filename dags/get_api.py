@@ -13,7 +13,7 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    'retry_delay': timedelta(seconds=5),
 }
 
 dag = DAG(
@@ -33,8 +33,8 @@ def fetch_and_store_weather(**context):
 
     print(f"Loaded {len(cities)} cities from configuration")
 
-    mongo_user = os.getenv('MONGO_INITDB_ROOT_USERNAME', 'admin')
-    mongo_pass = os.getenv('MONGO_INITDB_ROOT_PASSWORD', 'admin')
+    mongo_user = os.getenv('MONGO_INITDB_ROOT_USERNAME')
+    mongo_pass = os.getenv('MONGO_INITDB_ROOT_PASSWORD')
     mongo_host = os.getenv('MONGO_HOST', 'mongodb')
     mongo_port = os.getenv('MONGO_PORT', '27017')
 

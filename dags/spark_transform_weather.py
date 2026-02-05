@@ -4,6 +4,7 @@ from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from datetime import datetime, timedelta
 import psycopg2
+import os
 
 default_args = {
     'owner': 'airflow',
@@ -11,7 +12,7 @@ default_args = {
     'start_date': datetime(2026, 2, 1),
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 2,
+    'retries': 1,
     'retry_delay': timedelta(seconds=5),
 }
 
@@ -35,9 +36,9 @@ def check_postgres_ready(**context):
             conn = psycopg2.connect(
                 host='postgres-weather',
                 port=5432,
-                user='weather',
-                password='weather123',
-                database='weather_db',
+                user=os.getenv('PG_WEATHER_USER'),
+                password=os.getenv('PG_WEATHER_PASSWORD'),
+                database=os.getenv('PG_WEATHER_DB'),
                 connect_timeout=5
             )
             cursor = conn.cursor()
@@ -60,9 +61,9 @@ def process_staging_data(**context):
         conn = psycopg2.connect(
             host='postgres-weather',
             port=5432,
-            user='weather',
-            password='weather123',
-            database='weather_db',
+            user=os.getenv('PG_WEATHER_USER'),
+            password=os.getenv('PG_WEATHER_PASSWORD'),
+            database=os.getenv('PG_WEATHER_DB'),
             connect_timeout=10
         )
         cursor = conn.cursor()
