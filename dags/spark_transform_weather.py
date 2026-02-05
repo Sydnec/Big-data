@@ -12,7 +12,7 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 2,
-    'retry_delay': timedelta(minutes=2),
+    'retry_delay': timedelta(seconds=5),
 }
 
 dag = DAG(
@@ -109,7 +109,7 @@ spark_transform = BashOperator(
     docker exec spark-master /opt/spark/bin/spark-submit \
         --master spark://spark-master:7077 \
         --deploy-mode client \
-        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.2.0,org.postgresql:postgresql:42.6.0 \
+        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0,org.postgresql:postgresql:42.6.0 \
         --conf spark.executor.memory=1g \
         --conf spark.driver.memory=1g \
         /opt/spark-jobs/transform_weather.py \

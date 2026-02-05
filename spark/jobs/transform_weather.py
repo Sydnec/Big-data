@@ -13,7 +13,7 @@ def create_spark_session():
     return SparkSession.builder \
         .appName("WeatherTransform") \
         .config("spark.jars.packages",
-                "org.mongodb.spark:mongo-spark-connector_2.12:10.2.0,"
+                "org.mongodb.spark:mongo-spark-connector_2.12:10.4.0,"
                 "org.postgresql:postgresql:42.6.0") \
         .getOrCreate()
 
@@ -21,7 +21,7 @@ def read_from_mongodb(spark, mongo_uri):
     print(f"Reading from MongoDB: {mongo_uri}")
 
     df_raw = spark.read.format("mongodb") \
-        .option("uri", mongo_uri) \
+        .option("connection.uri", mongo_uri) \
         .option("database", "weather") \
         .option("collection", "raw_weather") \
         .load()
@@ -71,9 +71,7 @@ def transform_weather_data(df_raw):
     return df_transformed
 
 def write_to_postgresql(df, jdbc_url, jdbc_props, table_name):
-    df.write \
-        .mode("append") \
-        .jdbc(jdbc_url, table_name, jdbc_props)
+    df.write.jdbc(url=jdbc_url, table=table_name, mode="append", properties=jdbc_props)
 
 def process_staging_to_fact(jdbc_url, jdbc_props):
     import psycopg2
@@ -103,7 +101,7 @@ def process_staging_to_fact(jdbc_url, jdbc_props):
     return rows_processed
 
 def main():
-    mongo_uri = "mongodb://admin:admin@mongodb:27017/weather.raw_weather?authSource=admin"
+    mongo_uri = "mongodb://admin:admin@mongodb:27017/?authSource=admin"
     jdbc_url = "jdbc:postgresql://postgres-weather:5432/weather_db"
     jdbc_props = {
         "user": "weather",
