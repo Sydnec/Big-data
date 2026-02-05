@@ -1,8 +1,3 @@
-"""
-Airflow DAG: Spark Weather Transform
-Orchestrates the Spark job that transforms raw MongoDB weather data
-into structured PostgreSQL tables.
-"""
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
@@ -31,7 +26,6 @@ dag = DAG(
 
 
 def check_postgres_ready(**context):
-    """Check if PostgreSQL weather database is accessible."""
     import time
     max_retries = 5
     retry_delay = 5
@@ -62,10 +56,6 @@ def check_postgres_ready(**context):
 
 
 def process_staging_data(**context):
-    """
-    Process any remaining data in staging table to fact table.
-    This is a safety step in case Spark job didn't complete the transfer.
-    """
     try:
         conn = psycopg2.connect(
             host='postgres-weather',
@@ -77,12 +67,10 @@ def process_staging_data(**context):
         )
         cursor = conn.cursor()
 
-        # Call the staging processing function
         cursor.execute("SELECT process_staging_data()")
         rows_processed = cursor.fetchone()[0]
         conn.commit()
 
-        # Get final counts
         cursor.execute("SELECT COUNT(*) FROM fact_weather_hourly")
         total_fact = cursor.fetchone()[0]
 
@@ -94,7 +82,6 @@ def process_staging_data(**context):
         cursor.close()
         conn.close()
 
-        print(f"Post-processing complete:")
         print(f"  - Rows processed: {rows_processed}")
         print(f"  - Total in fact table: {total_fact}")
         print(f"  - Remaining in staging: {remaining_staging}")
@@ -110,15 +97,12 @@ def process_staging_data(**context):
         raise
 
 
-# Task 1: Check PostgreSQL readiness
 check_postgres = PythonOperator(
     task_id='check_postgres_ready',
     python_callable=check_postgres_ready,
     dag=dag,
 )
 
-# Task 2: Submit Spark job via spark-submit
-# Using BashOperator to call spark-submit on the spark-master container
 spark_transform = BashOperator(
     task_id='spark_transform_job',
     bash_command='''
@@ -134,12 +118,10 @@ spark_transform = BashOperator(
     dag=dag,
 )
 
-# Task 3: Post-process staging data
 post_process = PythonOperator(
     task_id='post_process_staging',
     python_callable=process_staging_data,
     dag=dag,
 )
 
-# Define task dependencies
 check_postgres >> spark_transform >> post_process

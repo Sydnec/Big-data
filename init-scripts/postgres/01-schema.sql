@@ -1,7 +1,4 @@
--- Weather Data Warehouse Schema
--- PostgreSQL schema for transformed weather data
-
--- Dimension: Cities (Occitanie region)
+-- Cities
 CREATE TABLE dim_cities (
     city_id SERIAL PRIMARY KEY,
     city_name VARCHAR(100) NOT NULL UNIQUE,
@@ -10,7 +7,7 @@ CREATE TABLE dim_cities (
     region VARCHAR(100) DEFAULT 'Occitanie'
 );
 
--- Fact: Hourly weather observations (structured data from Spark transformation)
+-- Hourly data
 CREATE TABLE fact_weather_hourly (
     id BIGSERIAL PRIMARY KEY,
     city_id INTEGER REFERENCES dim_cities(city_id),
@@ -28,7 +25,7 @@ CREATE TABLE fact_weather_hourly (
     UNIQUE(city_id, observation_time, ingestion_time)
 );
 
--- Staging table for Spark writes (before city_id resolution)
+-- Staging table for Spark writes
 CREATE TABLE fact_weather_hourly_staging (
     id BIGSERIAL PRIMARY KEY,
     city_name VARCHAR(100) NOT NULL,
@@ -66,7 +63,6 @@ RETURNS INTEGER AS $$
 DECLARE
     rows_processed INTEGER;
 BEGIN
-    -- Insert into fact table with city_id lookup
     INSERT INTO fact_weather_hourly (
         city_id, observation_time, ingestion_time,
         temperature_2m, precipitation, wind_speed_10m, wind_direction_10m,
@@ -83,7 +79,6 @@ BEGIN
 
     GET DIAGNOSTICS rows_processed = ROW_COUNT;
 
-    -- Mark staging rows as processed
     UPDATE fact_weather_hourly_staging SET processed = TRUE WHERE processed = FALSE;
 
     RETURN rows_processed;

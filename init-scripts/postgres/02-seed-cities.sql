@@ -1,6 +1,3 @@
--- Seed data for Occitanie cities
--- These cities match the configuration in dags/config/occitanie_cities.json
-
 INSERT INTO dim_cities (city_name, latitude, longitude, region) VALUES
     ('Toulouse', 43.60470, 1.44420, 'Occitanie'),
     ('Montpellier', 43.61080, 3.87670, 'Occitanie'),

@@ -1,8 +1,3 @@
-"""
-Spark Job: Transform MongoDB weather data to PostgreSQL
-Reads raw weather data from MongoDB, flattens hourly observations,
-and writes to PostgreSQL staging table.
-"""
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     explode, arrays_zip, col, lit, current_timestamp,
@@ -15,7 +10,6 @@ from pyspark.sql.types import (
 import sys
 
 def create_spark_session():
-    """Create Spark session with MongoDB and PostgreSQL support."""
     return SparkSession.builder \
         .appName("WeatherTransform") \
         .config("spark.jars.packages",
@@ -24,7 +18,6 @@ def create_spark_session():
         .getOrCreate()
 
 def read_from_mongodb(spark, mongo_uri):
-    """Read raw weather data from MongoDB."""
     print(f"Reading from MongoDB: {mongo_uri}")
 
     df_raw = spark.read.format("mongodb") \
@@ -38,14 +31,6 @@ def read_from_mongodb(spark, mongo_uri):
     return df_raw
 
 def transform_weather_data(df_raw):
-    """
-    Transform raw weather data by flattening nested hourly arrays.
-    Each MongoDB document contains hourly arrays that need to be exploded
-    into individual rows.
-    """
-    print("Transforming weather data...")
-
-    # Explode the hourly arrays using arrays_zip to keep values aligned
     df_exploded = df_raw.select(
         col("city"),
         col("latitude"),
@@ -64,7 +49,6 @@ def transform_weather_data(df_raw):
         )).alias("hourly")
     )
 
-    # Select and rename columns for PostgreSQL staging table
     df_transformed = df_exploded.select(
         col("city").alias("city_name"),
         to_timestamp(col("hourly.time")).alias("observation_time"),
@@ -79,7 +63,6 @@ def transform_weather_data(df_raw):
         col("source_doc_id")
     )
 
-    # Filter out null observation times
     df_transformed = df_transformed.filter(col("observation_time").isNotNull())
 
     count = df_transformed.count()
@@ -88,31 +71,18 @@ def transform_weather_data(df_raw):
     return df_transformed
 
 def write_to_postgresql(df, jdbc_url, jdbc_props, table_name):
-    """Write transformed data to PostgreSQL staging table."""
-    print(f"Writing to PostgreSQL table: {table_name}")
-
     df.write \
         .mode("append") \
         .jdbc(jdbc_url, table_name, jdbc_props)
 
-    print("Write completed successfully")
-
 def process_staging_to_fact(jdbc_url, jdbc_props):
-    """
-    Call PostgreSQL function to move data from staging to fact table.
-    This resolves city_name to city_id and handles deduplication.
-    """
     import psycopg2
 
-    # Parse JDBC URL for psycopg2
-    # jdbc:postgresql://host:port/database
     parts = jdbc_url.replace("jdbc:postgresql://", "").split("/")
     host_port = parts[0].split(":")
     host = host_port[0]
     port = int(host_port[1]) if len(host_port) > 1 else 5432
     database = parts[1] if len(parts) > 1 else "weather_db"
-
-    print(f"Processing staging data to fact table...")
 
     conn = psycopg2.connect(
         host=host,
@@ -133,12 +103,6 @@ def process_staging_to_fact(jdbc_url, jdbc_props):
     return rows_processed
 
 def main():
-    """Main entry point for the Spark job."""
-    print("=" * 60)
-    print("Starting Weather Transform Spark Job")
-    print("=" * 60)
-
-    # Configuration
     mongo_uri = "mongodb://admin:admin@mongodb:27017/weather.raw_weather?authSource=admin"
     jdbc_url = "jdbc:postgresql://postgres-weather:5432/weather_db"
     jdbc_props = {
@@ -149,31 +113,21 @@ def main():
     staging_table = "fact_weather_hourly_staging"
 
     try:
-        # Create Spark session
         spark = create_spark_session()
         spark.sparkContext.setLogLevel("WARN")
 
-        # Read from MongoDB
         df_raw = read_from_mongodb(spark, mongo_uri)
 
         if df_raw.count() == 0:
-            print("No data found in MongoDB. Exiting.")
             spark.stop()
             return
 
-        # Transform data
         df_transformed = transform_weather_data(df_raw)
 
-        # Write to PostgreSQL staging
         write_to_postgresql(df_transformed, jdbc_url, jdbc_props, staging_table)
 
-        # Process staging to fact table
         rows_processed = process_staging_to_fact(jdbc_url, jdbc_props)
-
-        print("=" * 60)
-        print("Weather Transform Job Completed Successfully")
         print(f"Rows processed: {rows_processed}")
-        print("=" * 60)
 
         spark.stop()
 

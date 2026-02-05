@@ -1,7 +1,3 @@
-"""
-Weather ETL Pipeline for Occitanie Region
-Collects weather data from Open Meteo API and stores in MongoDB
-"""
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
@@ -10,7 +6,6 @@ import json
 from pymongo import MongoClient
 import os
 
-# Default arguments for the DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -21,7 +16,6 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-# Create the DAG
 dag = DAG(
     'get_api',
     default_args=default_args,
@@ -33,22 +27,12 @@ dag = DAG(
 
 
 def fetch_and_store_weather(**context):
-    """
-    ETL function to:
-    1. Extract: Fetch weather data from Open Meteo API for Occitanie cities
-    2. Transform: Format data and add metadata
-    3. Load: Store in MongoDB raw_weather collection
-    """
-    print("Starting weather data collection...")
-
-    # Load cities configuration
     config_path = '/opt/airflow/dags/config/occitanie_cities.json'
     with open(config_path) as f:
         cities = json.load(f)
 
     print(f"Loaded {len(cities)} cities from configuration")
 
-    # Connect to MongoDB
     mongo_user = os.getenv('MONGO_INITDB_ROOT_USERNAME', 'admin')
     mongo_pass = os.getenv('MONGO_INITDB_ROOT_PASSWORD', 'admin')
     mongo_host = os.getenv('MONGO_HOST', 'mongodb')
@@ -62,9 +46,6 @@ def fetch_and_store_weather(**context):
     db = mongo_client['weather']
     collection = db['raw_weather']
 
-    print("Connected to MongoDB successfully")
-
-    # Weather variables to collect
     weather_params = [
         'temperature_2m',
         'precipitation',
@@ -80,7 +61,6 @@ def fetch_and_store_weather(**context):
     success_count = 0
     error_count = 0
 
-    # Fetch and store data for each city
     for city_info in cities:
         city = city_info['city']
         lat = city_info['latitude']
@@ -89,7 +69,6 @@ def fetch_and_store_weather(**context):
         print(f"\nProcessing {city} (lat: {lat}, lon: {lon})...")
 
         try:
-            # Extract: Call Open Meteo API
             url = 'https://api.open-meteo.com/v1/forecast'
             params = {
                 'latitude': lat,
@@ -104,7 +83,6 @@ def fetch_and_store_weather(**context):
 
             print(f"API response received for {city}")
 
-            # Transform: Format document with metadata
             document = {
                 'city': city,
                 'latitude': lat,
@@ -116,7 +94,6 @@ def fetch_and_store_weather(**context):
                 'data': data
             }
 
-            # Load: Store in MongoDB
             result = collection.insert_one(document)
             print(f"Data stored in MongoDB for {city} (doc_id: {result.inserted_id})")
             success_count += 1
@@ -128,17 +105,11 @@ def fetch_and_store_weather(**context):
             print(f"Error processing {city}: {str(e)}")
             error_count += 1
 
-    # Close MongoDB connection
     mongo_client.close()
 
-    # Summary
-    print(f"\n{'='*50}")
-    print(f"Weather data collection completed")
     print(f"Success: {success_count}/{len(cities)} cities")
     print(f"Errors: {error_count}/{len(cities)} cities")
-    print(f"{'='*50}")
 
-    # Raise error if all cities failed
     if success_count == 0:
         raise Exception("Failed to collect data for any city")
 
@@ -149,7 +120,6 @@ def fetch_and_store_weather(**context):
     }
 
 
-# Create the task
 fetch_task = PythonOperator(
     task_id='fetch_and_store_weather',
     python_callable=fetch_and_store_weather,
