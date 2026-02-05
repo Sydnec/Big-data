@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Weather metrics exporter
+  - job_name: 'weather-metrics'
+    static_configs:
+      - targets: ['metrics-exporter:9101']
+    scrape_interval: 15s
+    scrape_timeout: 10s
