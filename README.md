@@ -1,6 +1,6 @@
 # Big Data Weather ETL
 
-TERRACCIANO Anthony  
+TERRACCIANO Anthony (Shanks1703)  
 BOURLIER Simon (Sydnec)
 
 Projet ETL de données météo TP Big Data.
