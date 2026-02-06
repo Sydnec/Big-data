@@ -66,4 +66,6 @@ def test_open_meteo_api():
 
 
 if __name__ == '__main__':
-    test_open_meteo_api()
+    import sys
+    success = test_open_meteo_api()
+    sys.exit(0 if success else 1)
