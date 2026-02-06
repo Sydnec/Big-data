@@ -1,7 +1,7 @@
 # Big Data Weather ETL
 
 TERRACCIANO Anthony  
-BOURLIER Simon
+BOURLIER Simon (Sydnec)
 
 Projet ETL de données météo TP Big Data.
 
